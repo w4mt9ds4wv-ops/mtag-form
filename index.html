@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mtag Submission Form</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface-0: #f1f0ea;
+      --surface-1: #f7f6f2;
+      --surface-2: #ffffff;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-muted: #888780;
+      --text-accent: #185fa5;
+      --text-warning: #854f0b;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.18);
+      --border-accent: #378add;
+      --border-warning: #ef9f27;
+      --bg-accent: #e6f1fb;
+      --bg-warning: #faeeda;
+      --fill-accent: #378add;
+      --radius: 8px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface-0: #1c1c1a;
+        --surface-1: #252522;
+        --surface-2: #2e2e2b;
+        --text-primary: #e8e7e2;
+        --text-secondary: #a8a79f;
+        --text-muted: #6a6963;
+        --text-accent: #85b7eb;
+        --text-warning: #ef9f27;
+        --border: rgba(255,255,255,0.10);
+        --border-strong: rgba(255,255,255,0.18);
+        --border-accent: #378add;
+        --border-warning: #ba7517;
+        --bg-accent: #0c447c;
+        --bg-warning: #633806;
+        --fill-accent: #378add;
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--surface-0);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .form-wrap { width: 100%; max-width: 560px; }
+
+    .form-card {
+      background: var(--surface-2);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .form-header i { font-size: 20px; color: var(--text-accent); }
+    .form-header h1 { font-size: 16px; font-weight: 500; color: var(--text-primary); }
+    .form-header span { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .field label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: var(--surface-1);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--border-accent);
+      box-shadow: 0 0 0 3px var(--bg-accent);
+    }
+    .field textarea { height: 60px; resize: vertical; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin: 1.25rem 0 8px;
+    }
+
+    .period-block {
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .period-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .period-title { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.04em; text-transform: uppercase; }
+    .period-duration { font-size: 13px; font-weight: 500; color: var(--text-accent); }
+
+    .period2-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .period2-toggle input[type=checkbox] {
+      width: 16px; height: 16px;
+      cursor: pointer;
+      accent-color: var(--fill-accent);
+    }
+    .period2-toggle span { font-size: 13px; color: var(--text-secondary); }
+
+    #period2-block { display: none; }
+
+    .summary-card {
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .metric { display: flex; flex-direction: column; gap: 2px; }
+    .metric-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+    .metric-val { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+    .metric-val.mtag { color: var(--text-accent); }
+    .metric-val.warn { color: var(--text-warning); }
+    .mtag-note { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+
+    .warn-banner {
+      display: none;
+      background: var(--bg-warning);
+      border: 0.5px solid var(--border-warning);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text-warning);
+      margin-top: 8px;
+      align-items: center;
+      gap: 8px;
+    }
+    .warn-banner.show { display: flex; }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 1rem; }
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      height: 36px;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: transparent;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    button:hover { background: var(--surface-1); }
+    button:active { transform: scale(0.98); }
+
+    .output-box {
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      display: none;
+    }
+    .output-box.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="form-wrap">
+    <div class="form-card">
+      <div class="form-header">
+        <i class="ti ti-plane-departure" aria-hidden="true"></i>
+        <h1>Management tag submission</h1>
+        <span id="display-date"></span>
+      </div>
+
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="name" placeholder="" />
+      </div>
+
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="date" />
+      </div>
+
+      <div class="section-label">Duty day periods</div>
+
+      <div class="period-block">
+        <div class="period-header">
+          <span class="period-title">Period 1</span>
+          <span class="period-duration" id="dur1">—</span>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0">
+            <label>Start time</label>
+            <input type="text" id="start1" placeholder="0600" maxlength="4" inputmode="numeric" />
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>End time</label>
+            <input type="text" id="end1" placeholder="1440" maxlength="4" inputmode="numeric" />
+          </div>
+        </div>
+      </div>
+
+      <label class="period2-toggle">
+        <input type="checkbox" id="toggle2" onchange="togglePeriod2()" />
+        <span>Add a second duty period (went home mid-day)</span>
+      </label>
+
+      <div id="period2-block">
+        <div class="period-block">
+          <div class="period-header">
+            <span class="period-title">Period 2</span>
+            <span class="period-duration" id="dur2">—</span>
+          </div>
+          <div class="field-row">
+            <div class="field" style="margin-bottom:0">
+              <label>Start time</label>
+              <input type="text" id="start2" placeholder="1600" maxlength="4" inputmode="numeric" />
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label>End time</label>
+              <input type="text" id="end2" placeholder="1900" maxlength="4" inputmode="numeric" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Billable time (hours)</label>
+        <input type="number" id="billable" placeholder="6.5" step="0.1" min="0" />
+      </div>
+
+      <div class="field">
+        <label>Mtag reason</label>
+        <textarea id="reason" placeholder="Aircraft late from previous lesson, delay talking to MX about gear issue & Hold time"></textarea>
+      </div>
+
+      <div class="warn-banner" id="warn-banner">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+        <span id="warn-text"></span>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-grid">
+          <div class="metric">
+            <span class="metric-label">Duty day</span>
+            <span class="metric-val" id="out-duty">—</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Billable</span>
+            <span class="metric-val" id="out-billable">—</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Mtag time</span>
+            <span class="metric-val mtag" id="out-mtag">—</span>
+          </div>
+        </div>
+        <p class="mtag-note" id="mtag-note" style="display:none"></p>
+      </div>
+
+      <div class="btn-row">
+        <button onclick="generate()">Generate submission ↗</button>
+        <button id="btn-copy" onclick="copyOutput()" style="display:none">
+          <i class="ti ti-copy" aria-hidden="true"></i> Copy
+        </button>
+      </div>
+
+      <div class="output-box" id="output-box"></div>
+    </div>
+  </div>
+
+  <script>
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function toMins(t) {
+      if (!t) return null;
+      const s = t.replace(':', '').trim();
+      if (s.length < 3 || s.length > 4 || !/^\d+$/.test(s)) return null;
+      const h = parseInt(s.length === 3 ? s[0] : s.slice(0, 2), 10);
+      const m = parseInt(s.slice(-2), 10);
+      if (h > 23 || m > 59) return null;
+      return h * 60 + m;
+    }
+    function getVal(id) { return toMins(document.getElementById(id).value); }
+    function blockMins(s, e) {
+      if (s === null || e === null) return null;
+      let d = e - s;
+      if (d < 0) d += 24 * 60;
+      return d;
+    }
+    function fmtHHMM(mins) {
+      const h = Math.floor(Math.abs(mins) / 60);
+      const m = Math.abs(mins) % 60;
+      return h + ':' + pad(m);
+    }
+    function fmtDecimal(mins) { return (mins / 60).toFixed(1); }
+    function fmtDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, mo, d] = dateStr.split('-');
+      return mo + '/' + d + '/' + y;
+    }
+    function hasPeriod2() { return document.getElementById('toggle2').checked; }
+
+    function togglePeriod2() {
+      document.getElementById('period2-block').style.display = hasPeriod2() ? 'block' : 'none';
+      recalc();
+    }
+
+    function recalc() {
+      const s1 = getVal('start1');
+      const e1 = getVal('end1');
+      const d1 = blockMins(s1, e1);
+      const s2 = getVal('start2');
+      const e2 = getVal('end2');
+      const d2 = hasPeriod2() ? blockMins(s2, e2) : 0;
+      const billableRaw = document.getElementById('billable').value;
+
+      document.getElementById('dur1').textContent = d1 !== null ? fmtHHMM(d1) : '—';
+      if (hasPeriod2()) document.getElementById('dur2').textContent = d2 !== null ? fmtHHMM(d2) : '—';
+
+      const warn = document.getElementById('warn-banner');
+      warn.classList.remove('show');
+
+      if (d1 === null) {
+        ['out-duty','out-billable','out-mtag'].forEach(id => document.getElementById(id).textContent = '—');
+        document.getElementById('mtag-note').style.display = 'none';
+        return;
+      }
+
+      const totalDuty = d1 + (d2 || 0);
+      const billableMins = billableRaw ? Math.round(parseFloat(billableRaw) * 60) : null;
+      const mtagMins = billableMins !== null ? totalDuty - billableMins : null;
+
+      document.getElementById('out-duty').textContent = fmtHHMM(totalDuty);
+      document.getElementById('out-billable').textContent = billableMins !== null ? fmtDecimal(billableMins) + ' hrs' : '—';
+
+      const mtagEl = document.getElementById('out-mtag');
+      const noteEl = document.getElementById('mtag-note');
+
+      if (mtagMins !== null) {
+        if (mtagMins < 0) {
+          mtagEl.textContent = fmtDecimal(Math.abs(mtagMins)) + ' hrs';
+          mtagEl.className = 'metric-val warn';
+          warn.classList.add('show');
+          document.getElementById('warn-text').textContent = 'Billable time exceeds duty day — check your entries.';
+          noteEl.style.display = 'none';
+        } else {
+          mtagEl.textContent = fmtDecimal(mtagMins) + ' hrs';
+          mtagEl.className = 'metric-val mtag';
+          let note = 'Total duty ' + fmtHHMM(totalDuty);
+          if (hasPeriod2() && d2) note += ' (period 1 ' + fmtHHMM(d1) + ' + period 2 ' + fmtHHMM(d2) + ')';
+          note += ' − billable ' + fmtDecimal(billableMins) + ' hrs = ' + fmtDecimal(mtagMins) + ' hrs Mtag';
+          noteEl.textContent = note;
+          noteEl.style.display = 'block';
+        }
+      } else {
+        mtagEl.textContent = '—';
+        mtagEl.className = 'metric-val mtag';
+        noteEl.style.display = 'none';
+      }
+    }
+
+    function generate() {
+      const name = document.getElementById('name').value || '';
+      const date = document.getElementById('date').value;
+      const start1 = document.getElementById('start1').value;
+      const end1 = document.getElementById('end1').value;
+      const billableRaw = document.getElementById('billable').value;
+      const reason = document.getElementById('reason').value;
+      const two = hasPeriod2();
+      const start2 = document.getElementById('start2').value;
+      const end2 = document.getElementById('end2').value;
+
+      if (!start1 || !end1 || !billableRaw) { alert('Please fill in period 1 times and billable time.'); return; }
+      if (two && (!start2 || !end2)) { alert('Please fill in both times for period 2.'); return; }
+
+      const s1 = getVal('start1'), e1 = getVal('end1');
+      const d1 = blockMins(s1, e1);
+      const d2 = two ? blockMins(getVal('start2'), getVal('end2')) : 0;
+      const totalDuty = d1 + (d2 || 0);
+      const billableMins = Math.round(parseFloat(billableRaw) * 60);
+      const mtagMins = totalDuty - billableMins;
+
+      let out = 'Name: ' + name + '\n';
+      if (date) out += 'Date: ' + fmtDate(date) + '\n';
+      out += 'Duty day start time: ' + start1.replace(':', '').trim() + '\n\n';
+      out += 'Duty day end time: ' + end1.replace(':', '').trim() + '\n\n';
+      if (two && start2 && end2) {
+        out += 'Duty day start time (period 2): ' + start2.replace(':', '').trim() + '\n\n';
+        out += 'Duty day end time (period 2): ' + end2.replace(':', '').trim() + '\n\n';
+      }
+      out += 'Duty day total time: ' + fmtHHMM(totalDuty) + '\n\n';
+      out += 'Total day brief/flight billable time: ' + fmtDecimal(billableMins) + '\n\n';
+      out += 'Total day Mtag time: ' + fmtDecimal(mtagMins);
+      if (reason) out += ' (' + reason + ')';
+
+      const box = document.getElementById('output-box');
+      box.textContent = out;
+      box.classList.add('visible');
+      document.getElementById('btn-copy').style.display = 'inline-flex';
+    }
+
+    function copyOutput() {
+      navigator.clipboard.writeText(document.getElementById('output-box').textContent).then(() => {
+        const btn = document.getElementById('btn-copy');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="ti ti-check"></i> Copied';
+        setTimeout(() => btn.innerHTML = orig, 1800);
+      });
+    }
+
+    ['start1','end1','start2','end2','billable'].forEach(id => {
+      document.getElementById(id).addEventListener('input', recalc);
+    });
+
+    const today = new Date();
+    document.getElementById('date').value = today.toISOString().split('T')[0];
+    document.getElementById('display-date').textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    document.getElementById('name').value = '';
+  </script>
+</body>
+</html>
