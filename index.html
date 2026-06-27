@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Mtag Form</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface-0: #f1f0ea;
+      --surface-1: #f0efe9;
+      --surface-2: #ffffff;
+      --text-primary: #1a1a18;
+      --text-secondary: #5f5e5a;
+      --text-muted: #888780;
+      --text-accent: #185fa5;
+      --text-warning: #854f0b;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.20);
+      --border-accent: #378add;
+      --border-warning: #ef9f27;
+      --bg-accent: #e6f1fb;
+      --bg-warning: #faeeda;
+      --fill-accent: #185fa5;
+      --radius: 10px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface-0: #1c1c1a;
+        --surface-1: #252522;
+        --surface-2: #2e2e2b;
+        --text-primary: #e8e7e2;
+        --text-secondary: #a8a79f;
+        --text-muted: #6a6963;
+        --text-accent: #85b7eb;
+        --text-warning: #ef9f27;
+        --border: rgba(255,255,255,0.10);
+        --border-strong: rgba(255,255,255,0.22);
+        --border-accent: #378add;
+        --border-warning: #ba7517;
+        --bg-accent: #0c2f52;
+        --bg-warning: #3d2200;
+        --fill-accent: #378add;
+      }
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--surface-0);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    }
+
+    .page { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .header h1 { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+    .header-date { font-size: 13px; color: var(--text-muted); }
+
+    /* Card */
+    .card {
+      background: var(--surface-2);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 0.5px solid var(--border);
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    /* Fields */
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 11px 13px;
+      font-size: 16px; /* 16px prevents iOS zoom on focus */
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: var(--surface-1);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--border-accent);
+      box-shadow: 0 0 0 3px var(--bg-accent);
+    }
+    .field textarea { height: 72px; resize: none; font-size: 15px; line-height: 1.4; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Period block */
+    .period-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .period-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+    .period-duration { font-size: 13px; font-weight: 600; color: var(--text-accent); }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-2);
+      border: 0.5px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .toggle-label { font-size: 15px; color: var(--text-primary); }
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border-strong);
+      border-radius: 13px;
+      transition: background 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--fill-accent); }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+    #period2-card { display: none; }
+
+    /* Summary */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 0;
+    }
+    .metric + .metric { border-left: 0.5px solid var(--border); padding-left: 12px; }
+    .metric-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+    .metric-val { font-size: 24px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+    .metric-val.accent { color: var(--text-accent); }
+    .metric-val.warn { color: var(--text-warning); }
+    .mtag-note { font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 0.5px solid var(--border); }
+
+    /* Warning */
+    .warn-banner {
+      display: none;
+      background: var(--bg-warning);
+      border: 0.5px solid var(--border-warning);
+      border-radius: var(--radius);
+      padding: 10px 13px;
+      font-size: 14px;
+      color: var(--text-warning);
+      margin-top: 10px;
+    }
+    .warn-banner.show { display: block; }
+
+    /* Buttons */
+    .btn-generate {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      color: #fff;
+      background: var(--fill-accent);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-generate:active { opacity: 0.85; }
+
+    /* Output */
+    .output-card { display: none; }
+    .output-card.visible { display: block; }
+    .output-text {
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      padding: 13px;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+      font-family: var(--font-mono);
+      word-break: break-word;
+      margin-bottom: 10px;
+      border: 0.5px solid var(--border);
+    }
+    .btn-copy {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--text-accent);
+      background: var(--bg-accent);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-copy:active { opacity: 0.8; }
+    .btn-email {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--text-primary);
+      background: var(--surface-1);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-email:active { opacity: 0.8; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Mtag Submission</h1>
+    <span class="header-date" id="display-date"></span>
+  </div>
+
+  <!-- Info -->
+  <div class="card">
+    <div class="card-title">Info</div>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="name" placeholder="Your name" autocomplete="name" />
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="date" />
+    </div>
+  </div>
+
+  <!-- Period 1 -->
+  <div class="card">
+    <div class="period-header">
+      <span class="period-title">Period 1</span>
+      <span class="period-duration" id="dur1">—</span>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Start</label>
+        <input type="text" id="start1" placeholder="0600" maxlength="4" inputmode="numeric" />
+      </div>
+      <div class="field">
+        <label>End</label>
+        <input type="text" id="end1" placeholder="1440" maxlength="4" inputmode="numeric" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Period 2 toggle -->
+  <label class="toggle-row" for="toggle2">
+    <span class="toggle-label">Second duty period</span>
+    <div class="toggle-switch">
+      <input type="checkbox" id="toggle2" onchange="togglePeriod2()" />
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb"></div>
+    </div>
+  </label>
+
+  <!-- Period 2 -->
+  <div class="card" id="period2-card">
+    <div class="period-header">
+      <span class="period-title">Period 2</span>
+      <span class="period-duration" id="dur2">—</span>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Start</label>
+        <input type="text" id="start2" placeholder="1600" maxlength="4" inputmode="numeric" />
+      </div>
+      <div class="field">
+        <label>End</label>
+        <input type="text" id="end2" placeholder="1900" maxlength="4" inputmode="numeric" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Billable + reason -->
+  <div class="card">
+    <div class="card-title">Billing</div>
+    <div class="field">
+      <label>Billable time (hours)</label>
+      <input type="number" id="billable" placeholder="6.5" step="0.1" min="0" inputmode="decimal" />
+    </div>
+    <div class="field">
+      <label>Mtag reason</label>
+      <textarea id="reason" placeholder="e.g. Aircraft late from previous lesson, MX delay, hold time"></textarea>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card">
+    <div class="card-title">Summary</div>
+    <div class="summary-grid">
+      <div class="metric">
+        <span class="metric-label">Duty day</span>
+        <span class="metric-val" id="out-duty">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Billable</span>
+        <span class="metric-val" id="out-billable">—</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Mtag</span>
+        <span class="metric-val accent" id="out-mtag">—</span>
+      </div>
+    </div>
+    <div class="warn-banner" id="warn-banner"></div>
+    <p class="mtag-note" id="mtag-note" style="display:none"></p>
+  </div>
+
+  <!-- Generate button -->
+  <button class="btn-generate" onclick="generate()">Generate Submission</button>
+
+  <!-- Output -->
+  <div class="card output-card" id="output-card">
+    <div class="card-title">Ready to copy</div>
+    <div class="output-text" id="output-text"></div>
+    <button class="btn-copy" id="btn-copy" onclick="copyOutput()">Copy Text</button>
+    <button class="btn-email" id="btn-email" onclick="openEmail()">Open in Email</button>
+  </div>
+
+</div>
+
+<script>
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function toMins(t) {
+    if (!t) return null;
+    const s = t.replace(':', '').trim();
+    if (s.length < 3 || s.length > 4 || !/^\d+$/.test(s)) return null;
+    const h = parseInt(s.length === 3 ? s[0] : s.slice(0, 2), 10);
+    const m = parseInt(s.slice(-2), 10);
+    if (h > 23 || m > 59) return null;
+    return h * 60 + m;
+  }
+
+  function getVal(id) { return toMins(document.getElementById(id).value); }
+
+  function blockMins(s, e) {
+    if (s === null || e === null) return null;
+    let d = e - s;
+    if (d < 0) d += 24 * 60;
+    return d;
+  }
+
+  function fmtHHMM(mins) {
+    const h = Math.floor(Math.abs(mins) / 60);
+    const m = Math.abs(mins) % 60;
+    return h + ':' + pad(m);
+  }
+
+  function fmtDecimal(mins) { return (mins / 60).toFixed(1); }
+
+  function fmtDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, mo, d] = dateStr.split('-');
+    return mo + '/' + d + '/' + y;
+  }
+
+  function hasPeriod2() { return document.getElementById('toggle2').checked; }
+
+  function togglePeriod2() {
+    document.getElementById('period2-card').style.display = hasPeriod2() ? 'block' : 'none';
+    recalc();
+  }
+
+  function recalc() {
+    const d1 = blockMins(getVal('start1'), getVal('end1'));
+    const d2 = hasPeriod2() ? blockMins(getVal('start2'), getVal('end2')) : 0;
+    const billableRaw = document.getElementById('billable').value;
+
+    document.getElementById('dur1').textContent = d1 !== null ? fmtHHMM(d1) : '—';
+    if (hasPeriod2()) document.getElementById('dur2').textContent = d2 !== null ? fmtHHMM(d2) : '—';
+
+    const warn = document.getElementById('warn-banner');
+    warn.classList.remove('show');
+
+    if (d1 === null) {
+      ['out-duty','out-billable','out-mtag'].forEach(id => document.getElementById(id).textContent = '—');
+      document.getElementById('mtag-note').style.display = 'none';
+      return;
+    }
+
+    const totalDuty = d1 + (d2 || 0);
+    const billableMins = billableRaw ? Math.round(parseFloat(billableRaw) * 60) : null;
+    const mtagMins = billableMins !== null ? totalDuty - billableMins : null;
+
+    document.getElementById('out-duty').textContent = fmtHHMM(totalDuty);
+    document.getElementById('out-billable').textContent = billableMins !== null ? fmtDecimal(billableMins) : '—';
+
+    const mtagEl = document.getElementById('out-mtag');
+    const noteEl = document.getElementById('mtag-note');
+
+    if (mtagMins !== null) {
+      if (mtagMins < 0) {
+        mtagEl.textContent = fmtDecimal(Math.abs(mtagMins));
+        mtagEl.className = 'metric-val warn';
+        warn.textContent = 'Billable time exceeds duty day — check your entries.';
+        warn.classList.add('show');
+        noteEl.style.display = 'none';
+      } else {
+        mtagEl.textContent = fmtDecimal(mtagMins);
+        mtagEl.className = 'metric-val accent';
+        let note = 'Duty ' + fmtHHMM(totalDuty);
+        if (hasPeriod2() && d2) note += ' (P1 ' + fmtHHMM(d1) + ' + P2 ' + fmtHHMM(d2) + ')';
+        note += ' − billable ' + fmtDecimal(billableMins) + ' = ' + fmtDecimal(mtagMins) + ' hrs Mtag';
+        noteEl.textContent = note;
+        noteEl.style.display = 'block';
+      }
+    } else {
+      mtagEl.textContent = '—';
+      mtagEl.className = 'metric-val accent';
+      noteEl.style.display = 'none';
+    }
+  }
+
+  function generate() {
+    const name = document.getElementById('name').value.trim();
+    const date = document.getElementById('date').value;
+    const start1 = document.getElementById('start1').value.trim();
+    const end1 = document.getElementById('end1').value.trim();
+    const billableRaw = document.getElementById('billable').value;
+    const reason = document.getElementById('reason').value.trim();
+    const two = hasPeriod2();
+    const start2 = document.getElementById('start2').value.trim();
+    const end2 = document.getElementById('end2').value.trim();
+
+    if (!start1 || !end1 || !billableRaw) { alert('Please fill in period 1 times and billable time.'); return; }
+    if (two && (!start2 || !end2)) { alert('Please fill in both times for period 2, or uncheck the second period toggle.'); return; }
+
+    const d1 = blockMins(getVal('start1'), getVal('end1'));
+    const d2 = two ? blockMins(getVal('start2'), getVal('end2')) : 0;
+    if (d1 === null) { alert('Period 1 times look invalid — use HHMM format, e.g. 0600.'); return; }
+    const totalDuty = d1 + (d2 || 0);
+    const billableMins = Math.round(parseFloat(billableRaw) * 60);
+    const mtagMins = totalDuty - billableMins;
+
+    let out = '';
+    if (name) out += 'Name: ' + name + '\n';
+    if (date) out += 'Date: ' + fmtDate(date) + '\n';
+    out += 'Duty day start time: ' + start1.replace(':', '') + '\n\n';
+    out += 'Duty day end time: ' + end1.replace(':', '') + '\n\n';
+    if (two && start2 && end2) {
+      out += 'Duty day start time (period 2): ' + start2.replace(':', '') + '\n\n';
+      out += 'Duty day end time (period 2): ' + end2.replace(':', '') + '\n\n';
+    }
+    out += 'Duty day total time: ' + fmtHHMM(totalDuty) + '\n\n';
+    out += 'Total day brief/flight billable time: ' + fmtDecimal(billableMins) + '\n\n';
+    out += 'Total day Mtag time: ' + fmtDecimal(mtagMins);
+    if (reason) out += ' (' + reason + ')';
+
+    document.getElementById('output-text').textContent = out;
+    const card = document.getElementById('output-card');
+    card.classList.add('visible');
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyOutput() {
+    const text = document.getElementById('output-text').textContent;
+    const btn = document.getElementById('btn-copy');
+
+    // Primary: modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => btn.textContent = 'Copy Text', 2000);
+      }).catch(() => fallbackCopy(text, btn));
+    } else {
+      fallbackCopy(text, btn);
+    }
+  }
+
+  // Fallback for iOS Safari (select + execCommand)
+  function fallbackCopy(text, btn) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    // iOS needs setSelectionRange
+    ta.setSelectionRange(0, text.length);
+    try {
+      document.execCommand('copy');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = 'Copy Text', 2000);
+    } catch (e) {
+      btn.textContent = 'Select & copy manually';
+    }
+    document.body.removeChild(ta);
+  }
+
+  function openEmail() {
+    const text = document.getElementById('output-text').textContent;
+    const name = document.getElementById('name').value.trim();
+    const date = document.getElementById('date').value;
+    const dateFmt = date ? (function(d){ const p=d.split('-'); return p[1]+'/'+p[2]+'/'+p[0]; })(date) : '';
+    const subject = [name, dateFmt].filter(Boolean).join(' - ');
+    const mailto = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+    window.location.href = mailto;
+  }
+
+  ['start1','end1','start2','end2','billable'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recalc);
+  });
+
+  const today = new Date();
+  document.getElementById('date').value = today.toISOString().split('T')[0];
+  document.getElementById('display-date').textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+</script>
+</body>
+</html>
