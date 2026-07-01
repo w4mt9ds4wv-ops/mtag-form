@@ -62,7 +62,6 @@
 
     .page { padding: 16px; max-width: 600px; margin: 0 auto; }
 
-    /* Header */
     .header {
       display: flex;
       align-items: center;
@@ -72,7 +71,6 @@
     .header h1 { font-size: 17px; font-weight: 600; color: var(--text-primary); }
     .header-date { font-size: 13px; color: var(--text-muted); }
 
-    /* Card */
     .card {
       background: var(--surface-2);
       border-radius: 14px;
@@ -88,19 +86,20 @@
       text-transform: uppercase;
       margin-bottom: 12px;
     }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
 
-    /* Fields */
     .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
     .field:last-child { margin-bottom: 0; }
-    .field label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
+    .field label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
     .field input, .field textarea {
       width: 100%;
       padding: 11px 13px;
-      font-size: 16px; /* 16px prevents iOS zoom on focus */
+      font-size: 16px;
       font-family: var(--font-sans);
       color: var(--text-primary);
       background: var(--surface-1);
@@ -115,10 +114,8 @@
       box-shadow: 0 0 0 3px var(--bg-accent);
     }
     .field textarea { height: 72px; resize: none; font-size: 15px; line-height: 1.4; }
-
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* Period block */
     .period-header {
       display: flex;
       align-items: center;
@@ -128,7 +125,7 @@
     .period-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
     .period-duration { font-size: 13px; font-weight: 600; color: var(--text-accent); }
 
-    /* Toggle */
+    /* iOS-style toggle */
     .toggle-row {
       display: flex;
       align-items: center;
@@ -170,18 +167,41 @@
 
     #period2-card { display: none; }
 
+    /* Segmented control */
+    .seg-control {
+      display: inline-flex;
+      background: var(--surface-1);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .seg-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .seg-btn.active {
+      background: var(--surface-2);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+
     /* Summary */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 0;
     }
-    .metric {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 4px 0;
-    }
+    .metric { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
     .metric + .metric { border-left: 0.5px solid var(--border); padding-left: 12px; }
     .metric-label { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
     .metric-val { font-size: 24px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
@@ -189,7 +209,6 @@
     .metric-val.warn { color: var(--text-warning); }
     .mtag-note { font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 0.5px solid var(--border); }
 
-    /* Warning */
     .warn-banner {
       display: none;
       background: var(--bg-warning);
@@ -202,7 +221,6 @@
     }
     .warn-banner.show { display: block; }
 
-    /* Buttons */
     .btn-generate {
       display: block;
       width: 100%;
@@ -220,7 +238,6 @@
     }
     .btn-generate:active { opacity: 0.85; }
 
-    /* Output */
     .output-card { display: none; }
     .output-card.visible { display: block; }
     .output-text {
@@ -351,7 +368,13 @@
 
   <!-- Summary -->
   <div class="card">
-    <div class="card-title">Summary</div>
+    <div class="card-title-row">
+      <span class="card-title" style="margin-bottom:0">Summary</span>
+      <div class="seg-control">
+        <button class="seg-btn active" id="seg-hhmm" onclick="setFmt('hhmm')">HH:MM</button>
+        <button class="seg-btn" id="seg-dec" onclick="setFmt('dec')">H.H</button>
+      </div>
+    </div>
     <div class="summary-grid">
       <div class="metric">
         <span class="metric-label">Duty day</span>
@@ -384,6 +407,15 @@
 </div>
 
 <script>
+  var timeFmt = 'hhmm'; // 'hhmm' or 'dec'
+
+  function setFmt(fmt) {
+    timeFmt = fmt;
+    document.getElementById('seg-hhmm').classList.toggle('active', fmt === 'hhmm');
+    document.getElementById('seg-dec').classList.toggle('active', fmt === 'dec');
+    recalc();
+  }
+
   function pad(n) { return String(n).padStart(2, '0'); }
 
   function toMins(t) {
@@ -413,6 +445,11 @@
 
   function fmtDecimal(mins) { return (mins / 60).toFixed(1); }
 
+  // Format minutes using current mode
+  function fmtTime(mins) {
+    return timeFmt === 'hhmm' ? fmtHHMM(mins) : fmtDecimal(mins);
+  }
+
   function fmtDate(dateStr) {
     if (!dateStr) return '';
     const [y, mo, d] = dateStr.split('-');
@@ -431,8 +468,8 @@
     const d2 = hasPeriod2() ? blockMins(getVal('start2'), getVal('end2')) : 0;
     const billableRaw = document.getElementById('billable').value;
 
-    document.getElementById('dur1').textContent = d1 !== null ? fmtHHMM(d1) : '—';
-    if (hasPeriod2()) document.getElementById('dur2').textContent = d2 !== null ? fmtHHMM(d2) : '—';
+    document.getElementById('dur1').textContent = d1 !== null ? fmtTime(d1) : '—';
+    if (hasPeriod2()) document.getElementById('dur2').textContent = d2 !== null ? fmtTime(d2) : '—';
 
     const warn = document.getElementById('warn-banner');
     warn.classList.remove('show');
@@ -447,25 +484,25 @@
     const billableMins = billableRaw ? Math.round(parseFloat(billableRaw) * 60) : null;
     const mtagMins = billableMins !== null ? totalDuty - billableMins : null;
 
-    document.getElementById('out-duty').textContent = fmtHHMM(totalDuty);
-    document.getElementById('out-billable').textContent = billableMins !== null ? fmtDecimal(billableMins) : '—';
+    document.getElementById('out-duty').textContent = fmtTime(totalDuty);
+    document.getElementById('out-billable').textContent = billableMins !== null ? fmtTime(billableMins) : '—';
 
     const mtagEl = document.getElementById('out-mtag');
     const noteEl = document.getElementById('mtag-note');
 
     if (mtagMins !== null) {
       if (mtagMins < 0) {
-        mtagEl.textContent = fmtDecimal(Math.abs(mtagMins));
+        mtagEl.textContent = fmtTime(Math.abs(mtagMins));
         mtagEl.className = 'metric-val warn';
         warn.textContent = 'Billable time exceeds duty day — check your entries.';
         warn.classList.add('show');
         noteEl.style.display = 'none';
       } else {
-        mtagEl.textContent = fmtDecimal(mtagMins);
+        mtagEl.textContent = fmtTime(mtagMins);
         mtagEl.className = 'metric-val accent';
-        let note = 'Duty ' + fmtHHMM(totalDuty);
-        if (hasPeriod2() && d2) note += ' (P1 ' + fmtHHMM(d1) + ' + P2 ' + fmtHHMM(d2) + ')';
-        note += ' − billable ' + fmtDecimal(billableMins) + ' = ' + fmtDecimal(mtagMins) + ' hrs Mtag';
+        let note = 'Duty ' + fmtTime(totalDuty);
+        if (hasPeriod2() && d2) note += ' (P1 ' + fmtTime(d1) + ' + P2 ' + fmtTime(d2) + ')';
+        note += ' − billable ' + fmtTime(billableMins) + ' = ' + fmtTime(mtagMins) + ' Mtag';
         noteEl.textContent = note;
         noteEl.style.display = 'block';
       }
@@ -488,7 +525,7 @@
     const end2 = document.getElementById('end2').value.trim();
 
     if (!start1 || !end1 || !billableRaw) { alert('Please fill in period 1 times and billable time.'); return; }
-    if (two && (!start2 || !end2)) { alert('Please fill in both times for period 2, or uncheck the second period toggle.'); return; }
+    if (two && (!start2 || !end2)) { alert('Please fill in both times for period 2, or disable the second period toggle.'); return; }
 
     const d1 = blockMins(getVal('start1'), getVal('end1'));
     const d2 = two ? blockMins(getVal('start2'), getVal('end2')) : 0;
@@ -497,6 +534,7 @@
     const billableMins = Math.round(parseFloat(billableRaw) * 60);
     const mtagMins = totalDuty - billableMins;
 
+    // Output always uses current display format
     let out = '';
     if (name) out += 'Name: ' + name + '\n';
     if (date) out += 'Date: ' + fmtDate(date) + '\n';
@@ -506,9 +544,9 @@
       out += 'Duty day start time (period 2): ' + start2.replace(':', '') + '\n\n';
       out += 'Duty day end time (period 2): ' + end2.replace(':', '') + '\n\n';
     }
-    out += 'Duty day total time: ' + fmtHHMM(totalDuty) + '\n\n';
-    out += 'Total day brief/flight billable time: ' + fmtDecimal(billableMins) + '\n\n';
-    out += 'Total day Mtag time: ' + fmtDecimal(mtagMins);
+    out += 'Duty day total time: ' + fmtTime(totalDuty) + '\n\n';
+    out += 'Total day brief/flight billable time: ' + fmtTime(billableMins) + '\n\n';
+    out += 'Total day Mtag time: ' + fmtTime(mtagMins);
     if (reason) out += ' (' + reason + ')';
 
     document.getElementById('output-text').textContent = out;
@@ -520,8 +558,6 @@
   function copyOutput() {
     const text = document.getElementById('output-text').textContent;
     const btn = document.getElementById('btn-copy');
-
-    // Primary: modern clipboard API
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(() => {
         btn.textContent = '✓ Copied!';
@@ -532,7 +568,6 @@
     }
   }
 
-  // Fallback for iOS Safari (select + execCommand)
   function fallbackCopy(text, btn) {
     const ta = document.createElement('textarea');
     ta.value = text;
@@ -540,7 +575,6 @@
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
-    // iOS needs setSelectionRange
     ta.setSelectionRange(0, text.length);
     try {
       document.execCommand('copy');
@@ -558,7 +592,7 @@
     const date = document.getElementById('date').value;
     const dateFmt = date ? (function(d){ const p=d.split('-'); return p[1]+'/'+p[2]+'/'+p[0]; })(date) : '';
     const subject = [name, dateFmt].filter(Boolean).join(' - ');
-    const mailto = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+    const mailto = 'mailto:mtag@skyborne.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
     window.location.href = mailto;
   }
 
